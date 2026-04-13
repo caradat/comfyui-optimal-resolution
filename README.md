@@ -50,7 +50,7 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 
 ### Qwen Image
 - **Area-based (1328²)**: Uses base area of 1328² with aspect ratio adjustment
-- **Fixed (exact)**: Uses pre-defined exact resolutions:
+- **Fixed (exact)**: Uses pre-defined, exact resolutions based on the [model guide](https://github.com/QwenLM/Qwen-Image)
   - 1:1 - 1328×1328
   - 16:9 - 1664×928
   - 9:16 - 928×1664
