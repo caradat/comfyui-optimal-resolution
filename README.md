@@ -18,13 +18,11 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 - **Flux 1**: Base resolution 1024, multiple of 16
 - **Flux 2**: Base resolution 2048, multiple of 16
 - **Qwen Image**: Base resolution 1328, multiple of 16
-- **Stable Cascade**: Base resolution 1024, multiple of 16
 
 ### Video Models
 - **Wan 2.2 14B**: Base resolution 960, multiple of 16
 - **Wan 2.2 5B**: Base resolution 960, multiple of 16
 - **SVD XT**: Base resolution 1024, multiple of 16
-- **AnimateDiff**: Base resolution 512, multiple of 8
 
 ## Usage
 
