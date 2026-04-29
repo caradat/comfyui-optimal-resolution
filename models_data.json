@@ -1,11 +1,13 @@
 {
   "model_types": {
     "Image": [
-      "SDXL Base",
       "SD 1.5",
+      "SDXL Base",
       "Flux 1",
       "Flux 2",
-      "Qwen Image"
+      "Qwen Image",
+      "Z-Image",
+      "Ernie Image"
     ],
     "Video": [
       "Wan 2.2 14B",
@@ -14,11 +16,13 @@
     ]
   },
   "base_resolutions": {
-    "SDXL Base": 1024,
     "SD 1.5": 512,
+    "SDXL Base": 1024,
     "Flux 1": 1024,
     "Flux 2": 2048,
     "Qwen Image": 1328,
+    "Z-Image": 1024,
+    "Ernie Image": 1024,
     "Wan 2.2 14B": 960,
     "Wan 2.2 5B": 960,
     "SVD XT": 1024
@@ -29,11 +33,17 @@
     "Flux 1": 16,
     "Flux 2": 16,
     "Qwen Image": 16,
+    "Z-Image": 16,
+    "Ernie Image": 16,
     "Wan 2.2 14B": 16,
     "Wan 2.2 5B": 16,
     "SVD XT": 16
   },
   "mode_options": {
+    "SDXL Base": {
+      "values": ["Area-based (1024²)", "Fixed (exact)"],
+      "default": "Area-based (1024²)"
+    },
     "Flux 2": {
       "values": ["1MP", "2MP", "3MP", "4MP"],
       "default": "2MP"
@@ -46,7 +56,11 @@
       "values": ["Area-based (1328²)", "Fixed (exact)"],
       "default": "Area-based (1328²)"
     },
-    "SDXL Base": {
+    "Z-Image": {
+      "values": ["1MP", "2MP", "3MP", "4MP"],
+      "default": "2MP"
+    },
+    "Ernie Image": {
       "values": ["Area-based (1024²)", "Fixed (exact)"],
       "default": "Area-based (1024²)"
     },
@@ -62,12 +76,27 @@
       "3MP": { "area": 3145728 },
       "4MP": { "area": 4194304 }
     },
+    "Z-Image": {
+      "1MP": { "area": 1048576 },
+      "2MP": { "area": 2097152 },
+      "3MP": { "area": 3145728 },
+      "4MP": { "area": 4194304 }
+    },
     "Wan 2.2 14B": {
       "480p": { "area": 409920 },
       "720p": { "area": 921600 }
     }
   },
   "exact_resolutions": {
+    "SDXL Base": {
+      "1:1": [1024, 1024],
+      "16:9": [1360, 768],
+      "9:16": [768, 1360],
+      "4:3": [1152, 864],
+      "3:4": [864, 1152],
+      "3:2": [1248, 832],
+      "2:3": [832, 1248]
+    },
     "Qwen Image": {
       "1:1": [1328, 1328],
       "16:9": [1664, 928],
@@ -77,14 +106,14 @@
       "3:2": [1584, 1056],
       "2:3": [1056, 1584]
     },
-    "SDXL Base": {
+    "Ernie Image": {
       "1:1": [1024, 1024],
-      "16:9": [1360, 768],
-      "9:16": [768, 1360],
-      "4:3": [1176, 888],
-      "3:4": [888, 1176],
-      "3:2": [1248, 832],
-      "2:3": [832, 1248]
+      "16:9": [1264, 848],
+      "9:16": [848, 1264],
+      "21:9": [1376, 768],
+      "9:21": [768, 1376],
+      "9:7": [1200, 896],
+      "7:9": [896, 1200]
     }
   }
 }

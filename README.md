@@ -18,6 +18,7 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 - **Flux 1**: Base resolution 1024, multiple of 16
 - **Flux 2**: Base resolution 2048, multiple of 16
 - **Qwen Image**: Base resolution 1328, multiple of 16
+- **Ernie Image**: Base resolution 1024, multiple of 16
 
 ### Video Models
 - **Wan 2.2 14B**: Base resolution 960, multiple of 16
@@ -58,6 +59,17 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
   - 3:4 - 1104×1472
   - 3:2 - 1584×1056
   - 2:3 - 1056×1584
+
+### Ernie Image
+- **Area-based (1024²)**: Uses base area of 1024² with aspect ratio adjustment
+- **Fixed (exact)**: Uses pre-defined, exact resolutions based on the [model documentation](https://huggingface.co/baidu/ERNIE-Image)
+  - 1:1 - 1024×1024
+  - 16:9 - 1264×848
+  - 9:16 - 848×1264
+  - 21:9 - 1376×768
+  - 9:21 - 768×1376
+  - 9:7 - 1200×896
+  - 7:9 - 896×1200
 
 ### Flux 2
 - **1MP**: 1 megapixel mode
