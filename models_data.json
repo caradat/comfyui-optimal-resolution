@@ -41,28 +41,28 @@
   },
   "mode_options": {
     "SDXL Base": {
-      "values": ["Area-based (1024²)", "Fixed (exact)"],
-      "default": "Area-based (1024²)"
+      "values": ["Fixed (exact)", "Area-based (1024²)"],
+      "default": "Fixed (exact)"
     },
     "Flux 2": {
-      "values": ["1MP", "2MP", "3MP", "4MP"],
-      "default": "2MP"
+      "values": ["Area: 512² (0.26MP)", "Area: 640² (0.41MP)", "Area: 768² (0.59MP)", "Area: 896² (0.80MP)", "Area: 1024² (1.0MP)", "Area: 1152² (1.33MP)", "Area: 1280² (1.64MP)", "Area: 1440² (2.07MP)", "Area: 1536² (2.36MP)", "Area: 1664² (2.77MP)", "Area: 1792² (3.21MP)", "Area: 1920² (3.69MP)", "Area: 2048² (4.19MP)"],
+      "default": "Area: 1440² (2.07MP)"
     },
     "Wan 2.2 14B": {
       "values": ["720p", "480p"],
       "default": "720p"
     },
     "Qwen Image": {
-      "values": ["Area-based (1328²)", "Fixed (exact)"],
-      "default": "Area-based (1328²)"
+      "values": ["Fixed (exact)", "Area-based (1328²)"],
+      "default": "Fixed (exact)"
     },
     "Z-Image": {
-      "values": ["1MP", "2MP", "3MP", "4MP"],
-      "default": "2MP"
+      "values": ["Area: 512² (0.26MP)", "Area: 640² (0.41MP)", "Area: 768² (0.59MP)", "Area: 896² (0.80MP)", "Area: 1024² (1.0MP)", "Area: 1152² (1.33MP)", "Area: 1280² (1.64MP)", "Area: 1440² (2.07MP)", "Area: 1536² (2.36MP)", "Area: 1664² (2.77MP)", "Area: 1792² (3.21MP)", "Area: 1920² (3.69MP)", "Area: 2048² (4.19MP)"],
+      "default": "Area: 1024² (1.0MP)"
     },
     "Ernie Image": {
-      "values": ["Area-based (1024²)", "Fixed (exact)"],
-      "default": "Area-based (1024²)"
+      "values": ["Fixed (exact)", "Area-based (1024²)"],
+      "default": "Fixed (exact)"
     },
     "default": {
       "values": ["Standard"],
@@ -70,17 +70,26 @@
     }
   },
   "mode_resolutions": {
-    "Flux 2": {
-      "1MP": { "area": 1048576 },
-      "2MP": { "area": 2097152 },
-      "3MP": { "area": 3145728 },
-      "4MP": { "area": 4194304 }
-    },
-    "Z-Image": {
-      "1MP": { "area": 1048576 },
-      "2MP": { "area": 2097152 },
-      "3MP": { "area": 3145728 },
-      "4MP": { "area": 4194304 }
+    "Area": {
+      "384² (0.15MP)":  { "area": 147456 },
+      "448² (0.20MP)":  { "area": 200704 },
+      "512² (0.26MP)":  { "area": 262144 },
+      "640² (0.41MP)":  { "area": 409600 },
+      "768² (0.59MP)":  { "area": 589824 },
+      "896² (0.80MP)":  { "area": 802816 },
+      "1024² (1.0MP)":  { "area": 1048576 },
+      "1152² (1.33MP)": { "area": 1327104 },
+      "1280² (1.64MP)": { "area": 1638400 },
+      "1440² (2.07MP)": { "area": 2073600 },
+      "1536² (2.36MP)": { "area": 2359296 },
+      "1664² (2.77MP)": { "area": 2768896 },
+      "1792² (3.21MP)": { "area": 3211264 },
+      "1920² (3.69MP)": { "area": 3686400 },
+      "2048² (4.19MP)": { "area": 4194304 },
+      "2240² (5.02MP)": { "area": 5017600 },
+      "2560² (6.55MP)": { "area": 6553600 },
+      "3072² (9.44MP)": { "area": 9437184 },
+      "4096² (16.8MP)": { "area": 16777216 }
     },
     "Wan 2.2 14B": {
       "480p": { "area": 409920 },
@@ -114,6 +123,15 @@
       "9:21": [768, 1376],
       "9:7": [1200, 896],
       "7:9": [896, 1200]
+    }
+  },
+  "mode_aspect_ratios": {
+    "default": ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"],
+    "Qwen Image": {
+      "Fixed (exact)": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"]
+    },
+    "Ernie Image": {
+      "Fixed (exact)": ["1:1", "16:9", "9:16", "21:9", "9:21", "9:7", "7:9"]
     }
   }
 }

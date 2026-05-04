@@ -25,6 +25,7 @@ wheel/
 .idea/
 .vscode/
 .gigaide/
+.gigacode/
 *.swp
 *.swo
 

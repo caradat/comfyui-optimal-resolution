@@ -45,8 +45,8 @@ class OptimalResolutionNode:
             "required": {
                 "model_type": (["Image", "Video"],),
                 "model": (all_models,),
-                "aspect_ratio": (["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"],),
                 "mode": (all_modes,),
+                "aspect_ratio": (data.get("mode_aspect_ratios", {}).get("default", ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"]),),
             }
         }
 
@@ -85,16 +85,37 @@ class OptimalResolutionNode:
                 height = round(h / multiple_of) * multiple_of
                 display_text = f"{width} x {height}"
                 return width, height, display_text
+            
+            # Fallback for exact mode when aspect ratio is not available
+            if mode == "Fixed (exact)" and model in ["Qwen Image", "Ernie Image"]:
+                # Get the first available aspect ratio for this model in exact mode
+                mode_aspect_ratios = data.get("mode_aspect_ratios", {})
+                available_ratios = mode_aspect_ratios.get(model, {}).get("Fixed (exact)", [])
+                if available_ratios:
+                    fallback_ratio = available_ratios[0]
+                    if fallback_ratio in exact_res:
+                        w, h = exact_res[fallback_ratio]
+                        width = round(w / multiple_of) * multiple_of
+                        height = round(h / multiple_of) * multiple_of
+                        display_text = f"{width} x {height} (using {fallback_ratio} fallback)"
+                        return width, height, display_text
 
             # 2. Determine Base Area
             base_res = data.get("base_resolutions", {}).get(model, 1024)
             base_area = base_res * base_res
 
-            mode_resolutions = data.get("mode_resolutions", {}).get(model, {})
-            if mode in mode_resolutions:
-                base_area = mode_resolutions[mode]["area"]
+            # Handle Area mode with specific resolution selection
+            if mode.startswith("Area: "):
+                # Extract resolution name from mode string (e.g., "1024² (1.0MP)" from "Area: 1024² (1.0MP)")
+                resolution_name = mode[6:]  # Remove "Area: " prefix
+                area_resolutions = data.get("mode_resolutions", {}).get("Area", {})
+                if resolution_name in area_resolutions:
+                    base_area = area_resolutions[resolution_name]["area"]
             else:
-                base_area = base_res * base_res
+                # Handle other modes (SDXL, Qwen, etc.)
+                mode_resolutions = data.get("mode_resolutions", {}).get(model, {})
+                if mode in mode_resolutions:
+                    base_area = mode_resolutions[mode]["area"]
 
             # 3. Calculate Dimensions from Area and Ratio
             h_float = math.sqrt(base_area / ratio)

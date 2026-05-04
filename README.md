@@ -5,7 +5,7 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 ## Features
 
 - **Model-specific resolutions**: Each model has its own optimal base resolution and multiple-of value
-- **Aspect ratio support**: Supports common aspect ratios including 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, and 9:21
+- **Dynamic aspect ratio selection**: Aspect ratio options are filtered based on the selected mode, showing only valid combinations
 - **Multiple modes**: Some models support different generation modes (Standard, Fixed resolutions, etc.)
 - **Exact resolutions**: Certain models support fixed exact resolutions for optimal quality
 - **Automatic calculation**: Automatically calculates optimal width and height based on model requirements
@@ -30,8 +30,8 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 1. Add the Optimal Resolution node to your ComfyUI workflow
 2. Select the model type (Image or Video)
 3. Choose the specific model from the dropdown
-4. Select your desired aspect ratio
-5. Choose the generation mode (if available)
+4. Select the generation mode (if available)
+5. Select your desired aspect ratio (options are filtered based on the selected mode)
 6. The node will output the optimal width and height values
 
 ## Special Modes
@@ -72,10 +72,12 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
   - 7:9 - 896×1200
 
 ### Flux 2
-- **1MP**: 1 megapixel mode
-- **2MP**: 2 megapixel mode (default)
-- **3MP**: 3 megapixel mode
-- **4MP**: 4 megapixel mode
+- **Area: 1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
+- **Area: 1280² (1.5MP)**: 1.5 megapixels, area = 1,572,864
+- **Area: 1440² (2.0MP)**: 2.0 megapixels, area = 2,097,152
+- **Area: 1536² (2.3MP)**: 2.3 megapixels, area = 2,359,296
+- **Area: 1770² (3.0MP)**: 3.0 megапixels, area = 3,145,728
+- **Area: 2048² (4.0MP)**: 4.0 megapixels, area = 4,194,304
 
 ### Wan 2.2 14B
 - **720p**: 1280×720 resolution
@@ -101,6 +103,17 @@ The node behavior is controlled by the `models_data.json` file, which contains:
 - `mode_options`: Available generation modes for each model
 - `mode_resolutions`: Custom area values for different modes
 - `exact_resolutions`: Pre-defined exact resolutions for specific aspect ratios
+
+## Area Mode
+The Area mode provides a unified set of resolution options for models that previously used megapixel-based settings. This ensures consistency across different models.
+
+Available options:
+- **1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
+- **1280² (1.5MP)**: 1.5 megapixels, area = 1,572,864  
+- **1440² (2.0MP)**: 2.0 megapixels, area = 2,097,152
+- **1536² (2.3MP)**: 2.3 megapixels, area = 2,359,296
+- **1770² (3.0MP)**: 3.0 megapixels, area = 3,145,728
+- **2048² (4.0MP)**: 4.0 megapixels, area = 4,194,304
 
 ## License
 

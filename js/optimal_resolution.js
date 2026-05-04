@@ -71,12 +71,14 @@ function initializeWidgets(node, data) {
     const typeWidget = node.widgets.find(w => w.name === "model_type");
     const modelWidget = node.widgets.find(w => w.name === "model");
     const modeWidget = node.widgets.find(w => w.name === "mode");
+    const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
 
-    if (!typeWidget || !modelWidget || !modeWidget) return;
+    if (!typeWidget || !modelWidget || !modeWidget || !arWidget) return;
 
     // Initial Population based on default type
     updateModelList(node, typeWidget.value, data);
     updateModeOptions(node, modelWidget.value, data);
+    updateAspectRatioOptions(node, modelWidget.value, modeWidget.value, data);
 }
 
 function updateModelList(node, modelType, data) {
@@ -105,6 +107,27 @@ function updateModeOptions(node, modelName, data) {
     modeWidget.value = options.default;
 }
 
+function updateAspectRatioOptions(node, modelName, mode, data) {
+    const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
+    if (!arWidget || !data.mode_aspect_ratios) return;
+
+    // Default aspect ratios for non-exact modes
+    // Default to standard aspect ratios from config, with fallback
+    let validRatios = data.mode_aspect_ratios?.default || ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"];
+    
+    // Check if this model and mode has specific aspect ratio restrictions
+    if (data.mode_aspect_ratios?.[modelName]?.[mode]) {
+        validRatios = data.mode_aspect_ratios[modelName][mode];
+    }
+    
+    arWidget.options.values = validRatios;
+    
+    // Ensure current value is valid
+    if (!validRatios.includes(arWidget.value)) {
+        arWidget.value = validRatios[0];
+    }
+}
+
 function setupWidgetListeners(node) {
     const typeWidget = node.widgets.find(w => w.name === "model_type");
     const modelWidget = node.widgets.find(w => w.name === "model");
@@ -130,18 +153,29 @@ function setupWidgetListeners(node) {
         };
     }
 
-    // Model Change -> Update Modes
+    // Model Change -> Update Modes and Aspect Ratios
     if (modelWidget) {
         const origCallback = modelWidget.callback;
         modelWidget.callback = function(value) {
             if (origCallback) origCallback.apply(this, arguments);
             updateModeOptions(node, value, node.modelsData);
+            updateAspectRatioOptions(node, value, modeWidget.value, node.modelsData);
             triggerUpdate();
         };
     }
 
+    // Mode Change -> Update Aspect Ratios
+    if (modeWidget) {
+        const origCallback = modeWidget.callback;
+        modeWidget.callback = function(value) {
+            if (origCallback) origCallback.apply(this, arguments);
+            updateAspectRatioOptions(node, modelWidget.value, value, node.modelsData);
+            triggerUpdate();
+        };
+    }
+    
     // Others -> Just Update Resolution
-    [arWidget, multWidget, modeWidget].forEach(w => {
+    [arWidget, multWidget].forEach(w => {
         if (w) {
             const origCallback = w.callback;
             w.callback = function(value) {
