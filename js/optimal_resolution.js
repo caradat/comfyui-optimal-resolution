@@ -96,15 +96,15 @@ function updateModelList(node, modelType, data) {
 
 function updateModeOptions(node, modelName, data) {
     const modeWidget = node.widgets.find(w => w.name === "mode");
-    if (!modeWidget || !data.mode_options) return;
+    if (!modeWidget || !data.models_data) return;
 
-    let options = data.mode_options["default"];
-    if (data.mode_options[modelName]) {
-        options = data.mode_options[modelName];
+    let options = data.models_data["default"];
+    if (data.models_data[modelName]) {
+        options = data.models_data[modelName];
     }
 
-    modeWidget.options.values = options.values;
-    modeWidget.value = options.default;
+    modeWidget.options.values = options.mode_options.values;
+    modeWidget.value = options.mode_options.default;
 }
 
 function updateAspectRatioOptions(node, modelName, mode, data) {

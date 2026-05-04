@@ -32,10 +32,11 @@ class OptimalResolutionNode:
         
         # Collect all possible modes from all models
         all_modes = ["Standard"]  # Default placeholder
-        if data.get("mode_options"):
-            for model_name, mode_info in data["mode_options"].items():
-                if isinstance(mode_info, dict) and "values" in mode_info:
-                    all_modes.extend(mode_info["values"])
+        models_data = data.get("models_data", {})
+        for model_name, model_info in models_data.items():
+            mode_info = model_info.get("mode_options", {})
+            if isinstance(mode_info, dict) and "values" in mode_info:
+                all_modes.extend(mode_info["values"])
         
         # Remove duplicates while preserving order
         all_models = list(dict.fromkeys(all_models))
@@ -65,9 +66,6 @@ class OptimalResolutionNode:
         if not data:
             return 1024, 1024, "Error: No Data"
 
-        # Get multiple_of value for the model, default to 16
-        multiple_of = data.get("multiple_of", {}).get(model, 16)
-
         width, height = 1024, 1024
         display_text = "1024 x 1024"
 
@@ -77,6 +75,12 @@ class OptimalResolutionNode:
             ar_w, ar_h = int(ar_parts[0]), int(ar_parts[1])
             ratio = ar_w / ar_h
 
+            # Get model-specific data, falling back to defaults
+            model_data = data.get("models_data", {}).get(model, data.get("models_data", {}).get("default", {}))
+            
+            # Get multiple_of value for the model, default to 16
+            multiple_of = model_data.get("multiple_of", 16)
+            
             # 1. Handle Exact Resolutions (e.g., Qwen Fixed)
             exact_res = data.get("exact_resolutions", {}).get(model, {})
             if mode == "Fixed (exact)" and aspect_ratio in exact_res:
@@ -101,19 +105,19 @@ class OptimalResolutionNode:
                         return width, height, display_text
 
             # 2. Determine Base Area
-            base_res = data.get("base_resolutions", {}).get(model, 1024)
+            base_res = model_data.get("base_resolution", 1024)
             base_area = base_res * base_res
 
             # Handle Area mode with specific resolution selection
             if mode.startswith("Area: "):
                 # Extract resolution name from mode string (e.g., "1024² (1.0MP)" from "Area: 1024² (1.0MP)")
                 resolution_name = mode[6:]  # Remove "Area: " prefix
-                area_resolutions = data.get("mode_resolutions", {}).get("Area", {})
+                area_resolutions = data.get("resolutions", {}).get("Area", {})
                 if resolution_name in area_resolutions:
                     base_area = area_resolutions[resolution_name]["area"]
             else:
                 # Handle other modes (SDXL, Qwen, etc.)
-                mode_resolutions = data.get("mode_resolutions", {}).get(model, {})
+                mode_resolutions = data.get("resolutions", {}).get(model, {})
                 if mode in mode_resolutions:
                     base_area = mode_resolutions[mode]["area"]
 
@@ -146,7 +150,8 @@ class OptimalResolutionNode:
             self.__class__.models_data = data
 
         # Validate mode for model
-        valid_modes = data.get("mode_options", {}).get(model, {}).get("values", [])
+        model_data = data.get("models_data", {}).get(model, data.get("models_data", {}).get("default", {}))
+        valid_modes = model_data.get("mode_options", {}).get("values", [])
         if valid_modes and mode not in valid_modes:
             mode = "Standard"  # fallback
 
