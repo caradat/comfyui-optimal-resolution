@@ -37,17 +37,15 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 ## Special Modes
 
 ### SDXL Base
-- **Area-based (1024)**: Uses base resolution of 1024² with aspect ratio adjustment
+- **Area-based (1024²)**: Uses base area of 1024² with aspect ratio adjustment
 - **Fixed (exact)**: Uses pre-defined optimal resolutions for SDXL:
   - 1:1 - 1024×1024
-  - 9:7 - 1152×896
-  - 7:9 - 896×1152
-  - 19:13 - 1216×832
-  - 13:19 - 832×1216
-  - 7:4 - 1344×768
-  - 4:7 - 768×1344
-  - 12:5 - 1536×640
-  - 5:12 - 640×1536
+  - 16:9 - 1360×768
+  - 9:16 - 768×1360
+  - 4:3 - 1152×864
+  - 3:4 - 864×1152
+  - 3:2 - 1248×832
+  - 2:3 - 832×1248
 
 ### Qwen Image
 - **Area-based (1328²)**: Uses base area of 1328² with aspect ratio adjustment
@@ -72,16 +70,27 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
   - 7:9 - 896×1200
 
 ### Flux 2
+- **Area: 512² (0.26MP)**: 0.26 megapixel, area = 262,144
+- **Area: 640² (0.41MP)**: 0.41 megapixels, area = 409,600
+- **Area: 768² (0.59MP)**: 0.59 megapixels, area = 589,824
+- **Area: 896² (0.80MP)**: 0.80 megapixels, area = 802,816
 - **Area: 1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
-- **Area: 1280² (1.5MP)**: 1.5 megapixels, area = 1,572,864
-- **Area: 1440² (2.0MP)**: 2.0 megapixels, area = 2,097,152
-- **Area: 1536² (2.3MP)**: 2.3 megapixels, area = 2,359,296
-- **Area: 1770² (3.0MP)**: 3.0 megапixels, area = 3,145,728
-- **Area: 2048² (4.0MP)**: 4.0 megapixels, area = 4,194,304
+- **Area: 1152² (1.33MP)**: 1.33 megapixels, area = 1,327,104
+- **Area: 1280² (1.64MP)**: 1.64 megapixels, area = 1,638,400
+- **Area: 1440² (2.07MP)**: 2.07 megapixels, area = 2,073,600
+- **Area: 1536² (2.36MP)**: 2.36 megapixels, area = 2,359,296
+- **Area: 1664² (2.77MP)**: 2.77 megapixels, area = 2,768,896
+- **Area: 1792² (3.21MP)**: 3.21 megapixels, area = 3,211,264
+- **Area: 1920² (3.69MP)**: 3.69 megapixels, area = 3,686,400
+- **Area: 2048² (4.19MP)**: 4.19 megapixels, area = 4,194,304
 
 ### Wan 2.2 14B
-- **720p**: 1280×720 resolution
-- **480p**: 854×480 resolution
+- **720p (1280x704)**: 901120 area (1280×704)
+- **480p (854x480)**: 409920 area (854×480)
+
+### Wan 2.2 5B
+- **720p (1280x704)**: 901120 area (1280×704)
+- **480p (854x480)**: 409920 area (854×480)
 
 ## Installation
 
@@ -98,22 +107,34 @@ Custom node for ComfyUI helps determine the optimal resolution for image generat
 The node behavior is controlled by the `models_data.json` file, which contains:
 
 - `model_types`: Categorization of models into Image and Video types
-- `base_resolutions`: Base resolution for each model
-- `multiple_of`: The value that resolutions should be multiples of for each model
-- `mode_options`: Available generation modes for each model
-- `mode_resolutions`: Custom area values for different modes
+- `resolutions`: Custom area values for different modes (Area and model-specific like Wan 2.2 14B)
 - `exact_resolutions`: Pre-defined exact resolutions for specific aspect ratios
+- `aspect_ratios`: Aspect ratio options filtered by model and mode
+- `models_data`: Comprehensive model configuration including base_resolution, multiple_of, and mode_options
 
 ## Area Mode
-The Area mode provides a unified set of resolution options for models that previously used megapixel-based settings. This ensures consistency across different models.
+The Area mode provides a unified set of resolution options for models that use area-based settings. This ensures consistency across different models.
 
 Available options:
+- **384² (0.15MP)**: 0.15 megapixel, area = 147,456
+- **448² (0.20MP)**: 0.20 megapixels, area = 200,704
+- **512² (0.26MP)**: 0.26 megapixel, area = 262,144
+- **640² (0.41MP)**: 0.41 megapixels, area = 409,600
+- **768² (0.59MP)**: 0.59 megapixels, area = 589,824
+- **896² (0.80MP)**: 0.80 megapixels, area = 802,816
 - **1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
-- **1280² (1.5MP)**: 1.5 megapixels, area = 1,572,864  
-- **1440² (2.0MP)**: 2.0 megapixels, area = 2,097,152
-- **1536² (2.3MP)**: 2.3 megapixels, area = 2,359,296
-- **1770² (3.0MP)**: 3.0 megapixels, area = 3,145,728
-- **2048² (4.0MP)**: 4.0 megapixels, area = 4,194,304
+- **1152² (1.33MP)**: 1.33 megapixels, area = 1,327,104
+- **1280² (1.64MP)**: 1.64 megapixels, area = 1,638,400
+- **1440² (2.07MP)**: 2.07 megapixels, area = 2,073,600
+- **1536² (2.36MP)**: 2.36 megapixels, area = 2,359,296
+- **1664² (2.77MP)**: 2.77 megapixels, area = 2,768,896
+- **1792² (3.21MP)**: 3.21 megapixels, area = 3,211,264
+- **1920² (3.69MP)**: 3.69 megapixels, area = 3,686,400
+- **2048² (4.19MP)**: 4.19 megapixels, area = 4,194,304
+- **2240² (5.02MP)**: 5.02 megapixels, area = 5,017,600
+- **2560² (6.55MP)**: 6.55 megapixels, area = 6,553,600
+- **3072² (9.44MP)**: 9.44 megapixels, area = 9,437,184
+- **4096² (16.8MP)**: 16.8 megapixels, area = 16,777,216
 
 ## License
 

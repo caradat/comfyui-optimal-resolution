@@ -17,7 +17,14 @@ app.registerExtension({
                     .then(res => res.json())
                     .then(data => {
                         this.modelsData = data;
+                        // Ensure all widgets are properly initialized with correct options
                         initializeWidgets(this, data);
+                        // Force update of all dependent widgets
+                        const modelWidget = this.widgets.find(w => w.name === "model");
+                        if (modelWidget) {
+                            updateModeOptions(this, modelWidget.value, data);
+                            updateAspectRatioOptions(this, modelWidget.value, "Fixed (exact)", data);
+                        }
                         fetchResolution(this);
                     })
                     .catch(err => {
@@ -109,17 +116,24 @@ function updateModeOptions(node, modelName, data) {
 
 function updateAspectRatioOptions(node, modelName, mode, data) {
     const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
-    if (!arWidget || !data.mode_aspect_ratios) return;
+    if (!arWidget) return;
 
-    // Default aspect ratios for non-exact modes
-    // Default to standard aspect ratios from config, with fallback
-    let validRatios = data.mode_aspect_ratios?.default || ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"];
-    
-    // Check if this model and mode has specific aspect ratio restrictions
-    if (data.mode_aspect_ratios?.[modelName]?.[mode]) {
-        validRatios = data.mode_aspect_ratios[modelName][mode];
+    let validRatios = ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"];
+
+    // If in Fixed (exact) mode, get aspect ratios from the model's exact_resolutions
+    const modelInfo = data.models_data[modelName] || {};
+    if (mode === "Fixed (exact)" && modelInfo.exact_resolutions) {
+        validRatios = Object.keys(modelInfo.exact_resolutions);
+    } 
+    // Otherwise, check if model and mode have specific restrictions in aspect_ratios
+    else if (data.aspect_ratios?.[modelName]?.[mode]) {
+        validRatios = data.aspect_ratios[modelName][mode];
     }
-    
+    // Use default if defined
+    else if (data.aspect_ratios?.default) {
+        validRatios = data.aspect_ratios.default;
+    }
+
     arWidget.options.values = validRatios;
     
     // Ensure current value is valid
@@ -143,12 +157,24 @@ function setupWidgetListeners(node) {
         }, 100);
     };
 
-    // Type Change -> Update Models
+    // Type Change -> Update Models and all dependent widgets
     if (typeWidget) {
         const origCallback = typeWidget.callback;
         typeWidget.callback = function(value) {
             if (origCallback) origCallback.apply(this, arguments);
             updateModelList(node, value, node.modelsData);
+            
+            // After updating model list, also update mode and aspect ratio options
+            const modelWidget = node.widgets.find(w => w.name === "model");
+            if (modelWidget) {
+                updateModeOptions(node, modelWidget.value, node.modelsData);
+                
+                const modeWidget = node.widgets.find(w => w.name === "mode");
+                if (modeWidget) {
+                    updateAspectRatioOptions(node, modelWidget.value, modeWidget.value, node.modelsData);
+                }
+            }
+            
             triggerUpdate();
         };
     }

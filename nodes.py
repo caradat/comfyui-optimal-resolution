@@ -42,12 +42,20 @@ class OptimalResolutionNode:
         all_models = list(dict.fromkeys(all_models))
         all_modes = list(dict.fromkeys(all_modes))
         
+        # Build aspect_ratio options
+        # Start with default if available
+        aspect_ratios = data.get("aspect_ratios", {}).get("default", ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"])
+        
+        # If model is specified and uses 'Fixed (exact)', get aspect ratios from exact_resolutions
+        # Since we can't access model value here at class level, we return the default
+        # The actual dynamic selection will be handled in the widget frontend
+        
         return {
             "required": {
                 "model_type": (["Image", "Video"],),
                 "model": (all_models,),
                 "mode": (all_modes,),
-                "aspect_ratio": (data.get("mode_aspect_ratios", {}).get("default", ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"]),),
+                "aspect_ratio": (aspect_ratios,),
             }
         }
 
@@ -70,8 +78,10 @@ class OptimalResolutionNode:
         display_text = "1024 x 1024"
 
         try:
-            # Parse Aspect Ratio
-            ar_parts = aspect_ratio.split(':')
+            # Parse Aspect Ratio - extract numeric parts before any parentheses
+            # Handle cases like "16:9 (720p)" by taking only the part before parentheses
+            base_aspect = aspect_ratio.split(' (')[0] if ' (' in aspect_ratio else aspect_ratio
+            ar_parts = base_aspect.split(':')
             ar_w, ar_h = int(ar_parts[0]), int(ar_parts[1])
             ratio = ar_w / ar_h
 
@@ -82,7 +92,8 @@ class OptimalResolutionNode:
             multiple_of = model_data.get("multiple_of", 16)
             
             # 1. Handle Exact Resolutions (e.g., Qwen Fixed)
-            exact_res = data.get("exact_resolutions", {}).get(model, {})
+            model_info = data.get("models_data", {}).get(model, {})
+            exact_res = model_info.get("exact_resolutions", {})
             if mode == "Fixed (exact)" and aspect_ratio in exact_res:
                 w, h = exact_res[aspect_ratio]
                 width = round(w / multiple_of) * multiple_of
@@ -91,18 +102,16 @@ class OptimalResolutionNode:
                 return width, height, display_text
             
             # Fallback for exact mode when aspect ratio is not available
-            if mode == "Fixed (exact)" and model in ["Qwen Image", "Ernie Image"]:
+            if mode == "Fixed (exact)" and "exact_resolutions" in model_info:
                 # Get the first available aspect ratio for this model in exact mode
-                mode_aspect_ratios = data.get("mode_aspect_ratios", {})
-                available_ratios = mode_aspect_ratios.get(model, {}).get("Fixed (exact)", [])
+                available_ratios = list(exact_res.keys())
                 if available_ratios:
                     fallback_ratio = available_ratios[0]
-                    if fallback_ratio in exact_res:
-                        w, h = exact_res[fallback_ratio]
-                        width = round(w / multiple_of) * multiple_of
-                        height = round(h / multiple_of) * multiple_of
-                        display_text = f"{width} x {height} (using {fallback_ratio} fallback)"
-                        return width, height, display_text
+                    w, h = exact_res[fallback_ratio]
+                    width = round(w / multiple_of) * multiple_of
+                    height = round(h / multiple_of) * multiple_of
+                    display_text = f"{width} x {height} (using {fallback_ratio} fallback)"
+                    return width, height, display_text
 
             # 2. Determine Base Area
             base_res = model_data.get("base_resolution", 1024)
@@ -112,14 +121,9 @@ class OptimalResolutionNode:
             if mode.startswith("Area: "):
                 # Extract resolution name from mode string (e.g., "1024² (1.0MP)" from "Area: 1024² (1.0MP)")
                 resolution_name = mode[6:]  # Remove "Area: " prefix
-                area_resolutions = data.get("resolutions", {}).get("Area", {})
+                area_resolutions = data.get("resolutions", {})
                 if resolution_name in area_resolutions:
                     base_area = area_resolutions[resolution_name]["area"]
-            else:
-                # Handle other modes (SDXL, Qwen, etc.)
-                mode_resolutions = data.get("resolutions", {}).get(model, {})
-                if mode in mode_resolutions:
-                    base_area = mode_resolutions[mode]["area"]
 
             # 3. Calculate Dimensions from Area and Ratio
             h_float = math.sqrt(base_area / ratio)
