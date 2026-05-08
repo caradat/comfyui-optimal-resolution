@@ -77,7 +77,7 @@ function initializeWidgets(node, data) {
     // Find widgets
     const typeWidget = node.widgets.find(w => w.name === "model_type");
     const modelWidget = node.widgets.find(w => w.name === "model");
-    const modeWidget = node.widgets.find(w => w.name === "mode");
+    const modeWidget = node.widgets.find(w => w.name === "resolution");
     const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
 
     if (!typeWidget || !modelWidget || !modeWidget || !arWidget) return;
@@ -102,7 +102,7 @@ function updateModelList(node, modelType, data) {
 }
 
 function updateModeOptions(node, modelName, data) {
-    const modeWidget = node.widgets.find(w => w.name === "mode");
+    const modeWidget = node.widgets.find(w => w.name === "resolution");
     if (!modeWidget || !data.models_data) return;
 
     let options = data.models_data["default"];
@@ -110,11 +110,17 @@ function updateModeOptions(node, modelName, data) {
         options = data.models_data[modelName];
     }
 
-    modeWidget.options.values = options.mode_options.values;
-    modeWidget.value = options.mode_options.default;
+    const currentMode = modeWidget.value;
+    modeWidget.options.values = options.resolution_options.values;
+    // Сохраняем текущее значение, если оно валидно для новой модели, иначе используем значение по умолчанию
+    if (options.resolution_options.values.includes(currentMode)) {
+        modeWidget.value = currentMode;
+    } else {
+        modeWidget.value = options.resolution_options.default;
+    }
 }
 
-function updateAspectRatioOptions(node, modelName, mode, data) {
+function updateAspectRatioOptions(node, modelName, resolution, data) {
     const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
     if (!arWidget) return;
 
@@ -122,12 +128,12 @@ function updateAspectRatioOptions(node, modelName, mode, data) {
 
     // If in Fixed (exact) mode, get aspect ratios from the model's exact_resolutions
     const modelInfo = data.models_data[modelName] || {};
-    if (mode === "Fixed (exact)" && modelInfo.exact_resolutions) {
+    if (resolution === "Fixed (exact)" && modelInfo.exact_resolutions) {
         validRatios = Object.keys(modelInfo.exact_resolutions);
     } 
-    // Otherwise, check if model and mode have specific restrictions in aspect_ratios
-    else if (data.aspect_ratios?.[modelName]?.[mode]) {
-        validRatios = data.aspect_ratios[modelName][mode];
+    // Otherwise, check if model and resolution have specific restrictions in aspect_ratios
+    else if (data.aspect_ratios?.[modelName]?.[resolution]) {
+        validRatios = data.aspect_ratios[modelName][resolution];
     }
     // Use default if defined
     else if (data.aspect_ratios?.default) {
@@ -146,8 +152,7 @@ function setupWidgetListeners(node) {
     const typeWidget = node.widgets.find(w => w.name === "model_type");
     const modelWidget = node.widgets.find(w => w.name === "model");
     const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
-    const multWidget = node.widgets.find(w => w.name === "multiple_of");
-    const modeWidget = node.widgets.find(w => w.name === "mode");
+    const modeWidget = node.widgets.find(w => w.name === "resolution");
 
     const triggerUpdate = () => {
         if (node.fetchTimeout) clearTimeout(node.fetchTimeout);
@@ -169,7 +174,7 @@ function setupWidgetListeners(node) {
             if (modelWidget) {
                 updateModeOptions(node, modelWidget.value, node.modelsData);
                 
-                const modeWidget = node.widgets.find(w => w.name === "mode");
+                const modeWidget = node.widgets.find(w => w.name === "resolution");
                 if (modeWidget) {
                     updateAspectRatioOptions(node, modelWidget.value, modeWidget.value, node.modelsData);
                 }
@@ -201,7 +206,7 @@ function setupWidgetListeners(node) {
     }
     
     // Others -> Just Update Resolution
-    [arWidget, multWidget].forEach(w => {
+    [arWidget].forEach(w => {
         if (w) {
             const origCallback = w.callback;
             w.callback = function(value) {
@@ -218,15 +223,13 @@ function fetchResolution(node) {
     const typeWidget = node.widgets.find(w => w.name === "model_type");
     const modelWidget = node.widgets.find(w => w.name === "model");
     const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
-    const multWidget = node.widgets.find(w => w.name === "multiple_of");
-    const modeWidget = node.widgets.find(w => w.name === "mode");
+    const modeWidget = node.widgets.find(w => w.name === "resolution");
 
     const payload = {
         model_type: typeWidget?.value || "Image",
         model: modelWidget?.value || "SDXL Base",
         aspect_ratio: arWidget?.value || "1:1",
-        multiple_of: multWidget?.value || 16,
-        mode: modeWidget?.value || "Standard"
+        resolution: modeWidget?.value || "Standard"
     };
 
     fetch('/optimal_resolution/calculate', {

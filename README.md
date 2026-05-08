@@ -110,7 +110,7 @@ The node behavior is controlled by the `models_data.json` file, which contains:
 - `resolutions`: Custom area values for different modes (Area and model-specific like Wan 2.2 14B)
 - `exact_resolutions`: Pre-defined exact resolutions for specific aspect ratios
 - `aspect_ratios`: Aspect ratio options filtered by model and mode
-- `models_data`: Comprehensive model configuration including base_resolution, multiple_of, and mode_options
+- `models_data`: Comprehensive model configuration including base_resolution, multiple_of, and resolution_options
 
 ## Area Mode
 The Area mode provides a unified set of resolution options for models that use area-based settings. This ensures consistency across different models.

@@ -37,14 +37,14 @@ async def calculate_resolution_api(request):
         model = body.get("model", "SDXL Base")
         aspect_ratio = body.get("aspect_ratio", "1:1")
         multiple_of = body.get("multiple_of", 16)
-        mode = body.get("mode", "Standard")
+        resolution = body.get("resolution", "Standard")
         
         data = OptimalResolutionNode.models_data
         if not data:
             data = load_models_data()
 
         w, h, text = OptimalResolutionNode.calculate_resolution_logic(
-            model_type, model, aspect_ratio, mode, data
+            model_type, model, aspect_ratio, resolution, data
         )
 
         return aiohttp.web.json_response({

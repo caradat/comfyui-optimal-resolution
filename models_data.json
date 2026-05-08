@@ -33,10 +33,10 @@
     "SDXL Base": {
       "base_resolution": 1024,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)",
-          "Area-based (1024²)"
+          "Area: 1024² (1.0MP)"
         ],
         "default": "Fixed (exact)"
       },
@@ -53,10 +53,10 @@
     "Ernie Image": {
       "base_resolution": 1024,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)",
-          "Area-based (1024²)"
+          "Area: 1024² (1.0MP)"
         ],
         "default": "Fixed (exact)"
       },
@@ -73,7 +73,7 @@
     "SVD XT": {
       "base_resolution": 768,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)"
         ],
@@ -86,7 +86,7 @@
     "Flux 2": {
       "base_resolution": 2048,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 512² (0.26MP)",
           "Area: 640² (0.41MP)",
@@ -108,10 +108,10 @@
     "Qwen Image": {
       "base_resolution": 1328,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)",
-          "Area-based (1328²)"
+          "Area: 1328² (1.76MP)"
         ],
         "default": "Fixed (exact)"
       },
@@ -128,7 +128,7 @@
     "Flux 1": {
       "base_resolution": 1024,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 1024² (1.0MP)"
         ],
@@ -138,7 +138,7 @@
     "SD 1.5": {
       "base_resolution": 512,
       "multiple_of": 8,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 512² (0.26MP)"
         ],
@@ -149,7 +149,7 @@
       "huggingface_url" : "https://huggingface.co/Tongyi-MAI/Z-Image",
       "base_resolution": 1024,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 512² (0.26MP)",
           "Area: 640² (0.41MP)",
@@ -172,7 +172,7 @@
       "huggingface_url" : "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B",
       "base_resolution": 960,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)",
           "Area: 960² (0.92MP)"
@@ -187,7 +187,7 @@
       "huggingface_url" : "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B",
       "base_resolution": 960,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Fixed (exact)",
           "Area: 960² (0.92MP)"
@@ -203,7 +203,7 @@
       "huggingface_url": "https://huggingface.co/Lightricks/LTX-2.3",
       "base_resolution": 1024,
       "multiple_of": 32,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 512² (0.26MP)",
           "Area: 768² (0.59MP)",
@@ -219,7 +219,7 @@
     "default": {
       "base_resolution": 1024,
       "multiple_of": 16,
-      "mode_options": {
+      "resolution_options": {
         "values": [
           "Area: 1024² (1.0MP)"
         ],

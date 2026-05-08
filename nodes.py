@@ -34,7 +34,7 @@ class OptimalResolutionNode:
         all_modes = ["Standard"]  # Default placeholder
         models_data = data.get("models_data", {})
         for model_name, model_info in models_data.items():
-            mode_info = model_info.get("mode_options", {})
+            mode_info = model_info.get("resolution_options", {})
             if isinstance(mode_info, dict) and "values" in mode_info:
                 all_modes.extend(mode_info["values"])
         
@@ -54,7 +54,7 @@ class OptimalResolutionNode:
             "required": {
                 "model_type": (["Image", "Video"],),
                 "model": (all_models,),
-                "mode": (all_modes,),
+                "resolution": (all_modes,),
                 "aspect_ratio": (aspect_ratios,),
             }
         }
@@ -147,20 +147,20 @@ class OptimalResolutionNode:
 
         return width, height, display_text
 
-    def get_resolution(self, model_type, model, aspect_ratio, mode):
+    def get_resolution(self, model_type, model, aspect_ratio, resolution):
         data = self.__class__.models_data
         if not data:
             data = load_models_data()
             self.__class__.models_data = data
 
-        # Validate mode for model
+        # Validate resolution for model
         model_data = data.get("models_data", {}).get(model, data.get("models_data", {}).get("default", {}))
-        valid_modes = model_data.get("mode_options", {}).get("values", [])
-        if valid_modes and mode not in valid_modes:
-            mode = "Standard"  # fallback
+        valid_modes = model_data.get("resolution_options", {}).get("values", [])
+        if valid_modes and resolution not in valid_modes:
+            resolution = "Standard"  # fallback
 
         w, h, text = self.calculate_resolution_logic(
-            model_type, model, aspect_ratio, mode, data
+            model_type, model, aspect_ratio, resolution, data
         )
 
         return {
