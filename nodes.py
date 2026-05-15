@@ -42,8 +42,6 @@ def load_models_data():
     - `data/resolutions.json`
     - `data/aspect_ratios.json`
     - Individual model files in `data/image/` and `data/video/`
-    
-    Returns a dictionary with the same structure as the old `models_data.json`.
     """
     global _models_data_cache, _aspect_ratios_data, _resolutions_data
     
@@ -59,10 +57,25 @@ def load_models_data():
         "aspect_ratios": {}
     }
     
-    # Load the main configuration files
-    _resolutions_data = _load_json_file(os.path.join(DATA_DIR, "resolutions.json"))
-    _aspect_ratios_data = _load_json_file(os.path.join(DATA_DIR, "aspect_ratios.json"))
-    
+    # Load the main configuration files with error handling and defaults
+    try:
+        _resolutions_data = _load_json_file(os.path.join(DATA_DIR, "resolutions.json"))
+        if not isinstance(_resolutions_data, dict):
+            _resolutions_data = {}
+            print("[OptimalResolution] Warning: resolutions.json is not a valid object, using empty defaults.")
+    except Exception as e:
+        _resolutions_data = {}
+        print(f"[OptimalResolution] Error loading resolutions.json, using empty defaults: {e}")
+
+    try:
+        _aspect_ratios_data = _load_json_file(os.path.join(DATA_DIR, "aspect_ratios.json"))
+        if not isinstance(_aspect_ratios_data, dict):
+            _aspect_ratios_data = {}
+            print("[OptimalResolution] Warning: aspect_ratios.json is not a valid object, using empty defaults.")
+    except Exception as e:
+        _aspect_ratios_data = {}
+        print(f"[OptimalResolution] Error loading aspect_ratios.json, using empty defaults: {e}")
+
     data["resolutions"] = _resolutions_data
     data["aspect_ratios"] = _aspect_ratios_data
     
@@ -83,12 +96,16 @@ def load_models_data():
                 data["model_types"][model_type].append(model_name)
                 
                 # Load the model's data
-                model_data = _load_model_file(model_name, model_type)
-                if model_data is None:
-                    print(f"[OptimalResolution] Failed to load data for model: {model_name}")
+                try:
+                    model_data = _load_model_file(model_name, model_type)
+                    if not isinstance(model_data, dict) or 'name' not in model_data:
+                        print(f"[OptimalResolution] Invalid or missing data for model '{model_name}', skipping.")
+                        continue
+                    # Use the model_name (from filename) as the key for consistency with the frontend
+                    data["models_data"][model_name] = model_data
+                except Exception as e:
+                    print(f"[OptimalResolution] Unexpected error loading model '{model_name}': {e}")
                     continue
-                # Use the model_name (from filename) as the key for consistency with the frontend
-                data["models_data"][model_name] = model_data
     
     # Cache the result
     _models_data_cache = data

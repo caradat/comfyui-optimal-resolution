@@ -14,8 +14,15 @@ app.registerExtension({
 
                 // 1. Fetch Configuration
                 fetch('/optimal_resolution/models')
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
                     .then(data => {
+                        // Validate critical data structure
+                        if (!data || !data.model_types || !data.models_data) {
+                            throw new Error("Invalid data structure: missing model_types or models_data");
+                        }
                         this.modelsData = data;
                         console.log("[OptimalResolution] Fetched models data:", data);
                         // Ensure all widgets are properly initialized with correct options
@@ -32,6 +39,11 @@ app.registerExtension({
                     .catch(err => {
                         console.error("[OptimalResolution] Failed to load config", err);
                         this.resolutionText = "Config Load Error";
+                        // Initialize widgets with minimal fallback data to prevent UI crashes
+                        initializeWidgets(this, {
+                            model_types: { Image: ["Fallback"], Video: [] },
+                            models_data: { "Fallback": { resolution_options: { values: ["Standard"], default: "Standard" } } }
+                        });
                     });
 
                 // 2. Setup Widget Callbacks
@@ -77,12 +89,15 @@ app.registerExtension({
 
 function initializeWidgets(node, data) {
     // Find widgets
-    const typeWidget = node.widgets.find(w => w.name === "model_type");
-    const modelWidget = node.widgets.find(w => w.name === "model");
-    const modeWidget = node.widgets.find(w => w.name === "resolution");
-    const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
+    const typeWidget = node.widgets?.find(w => w.name === "model_type");
+    const modelWidget = node.widgets?.find(w => w.name === "model");
+    const modeWidget = node.widgets?.find(w => w.name === "resolution");
+    const arWidget = node.widgets?.find(w => w.name === "aspect_ratio");
 
-    if (!typeWidget || !modelWidget || !modeWidget || !arWidget) return;
+    if (!typeWidget || !modelWidget || !modeWidget || !arWidget) {
+        console.warn("[OptimalResolution] initializeWidgets: One or more required widgets are missing.");
+        return;
+    }
 
     // Initial Population based on default type
     updateModelList(node, typeWidget.value, data);
@@ -91,8 +106,11 @@ function initializeWidgets(node, data) {
 }
 
 function updateModelList(node, modelType, data) {
-    const modelWidget = node.widgets.find(w => w.name === "model");
-    if (!modelWidget || !data.model_types) return;
+    const modelWidget = node.widgets?.find(w => w.name === "model");
+    if (!modelWidget || !data?.model_types) {
+        console.error("[OptimalResolution] updateModelList: modelWidget or data.model_types is missing");
+        return;
+    }
 
     const models = data.model_types[modelType] || [];
     modelWidget.options.values = models;
@@ -104,8 +122,8 @@ function updateModelList(node, modelType, data) {
 }
 
 function updateModeOptions(node, modelName, data) {
-    const modeWidget = node.widgets.find(w => w.name === "resolution");
-    if (!modeWidget || !data.models_data) {
+    const modeWidget = node.widgets?.find(w => w.name === "resolution");
+    if (!modeWidget || !data?.models_data) {
         console.error("[OptimalResolution] updateModeOptions: modeWidget or data.models_data is missing");
         return;
     }
@@ -136,8 +154,11 @@ function updateModeOptions(node, modelName, data) {
 }
 
 function updateAspectRatioOptions(node, modelName, resolution, data) {
-    const arWidget = node.widgets.find(w => w.name === "aspect_ratio");
-    if (!arWidget) return;
+    const arWidget = node.widgets?.find(w => w.name === "aspect_ratio");
+    if (!arWidget) {
+        console.warn("[OptimalResolution] updateAspectRatioOptions: aspect_ratio widget is missing");
+        return;
+    }
 
     let validRatios = ["1:1", "21:9", "9:21", "16:9", "9:16", "5:4", "4:5", "4:3", "3:4", "3:2", "2:3"];
 
@@ -181,15 +202,17 @@ function setupWidgetListeners(node) {
     if (typeWidget) {
         const origCallback = typeWidget.callback;
         typeWidget.callback = function(value) {
-            if (origCallback) origCallback.apply(this, arguments);
+            if (typeof origCallback === 'function') {
+                origCallback.apply(this, arguments);
+            }
             updateModelList(node, value, node.modelsData);
             
             // After updating model list, also update mode and aspect ratio options
-            const modelWidget = node.widgets.find(w => w.name === "model");
+            const modelWidget = node.widgets?.find(w => w.name === "model");
             if (modelWidget) {
                 updateModeOptions(node, modelWidget.value, node.modelsData);
                 
-                const modeWidget = node.widgets.find(w => w.name === "resolution");
+                const modeWidget = node.widgets?.find(w => w.name === "resolution");
                 if (modeWidget) {
                     updateAspectRatioOptions(node, modelWidget.value, modeWidget.value, node.modelsData);
                 }
@@ -203,7 +226,9 @@ function setupWidgetListeners(node) {
     if (modelWidget) {
         const origCallback = modelWidget.callback;
         modelWidget.callback = function(value) {
-            if (origCallback) origCallback.apply(this, arguments);
+            if (typeof origCallback === 'function') {
+                origCallback.apply(this, arguments);
+            }
             updateModeOptions(node, value, node.modelsData);
             updateAspectRatioOptions(node, value, modeWidget.value, node.modelsData);
             triggerUpdate();
@@ -214,7 +239,9 @@ function setupWidgetListeners(node) {
     if (modeWidget) {
         const origCallback = modeWidget.callback;
         modeWidget.callback = function(value) {
-            if (origCallback) origCallback.apply(this, arguments);
+            if (typeof origCallback === 'function') {
+                origCallback.apply(this, arguments);
+            }
             updateAspectRatioOptions(node, modelWidget.value, value, node.modelsData);
             triggerUpdate();
         };
@@ -225,7 +252,9 @@ function setupWidgetListeners(node) {
         if (w) {
             const origCallback = w.callback;
             w.callback = function(value) {
-                if (origCallback) origCallback.apply(this, arguments);
+                if (typeof origCallback === 'function') {
+                    origCallback.apply(this, arguments);
+                }
                 triggerUpdate();
             };
         }

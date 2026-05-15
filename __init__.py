@@ -8,8 +8,33 @@ import aiohttp
 
 WEB_DIRECTORY = "./js"
 
-# Load data immediately at module import time
-OptimalResolutionNode.models_data = load_models_data()
+# Load data immediately at module import time with error handling
+try:
+    OptimalResolutionNode.models_data = load_models_data()
+    if not OptimalResolutionNode.models_data:
+        raise ValueError("Loaded data is empty")
+except Exception as e:
+    print(f"[OptimalResolution] Critical error during initialization: {e}. Using fallback data.")
+    # Fallback to minimal viable data structure
+    OptimalResolutionNode.models_data = {
+        "model_types": {"Image": ["Fallback Model"], "Video": []},
+        "models_data": {
+            "Fallback Model": {
+                "base_resolution": 1024,
+                "multiple_of": 16,
+                "resolution_options": {
+                    "values": ["Standard"],
+                    "default": "Standard"
+                }
+            },
+            "default": {
+                "base_resolution": 1024,
+                "multiple_of": 16
+            }
+        },
+        "resolutions": {},
+        "aspect_ratios": {}
+    }
 
 class OptimalResolutionExtension(ComfyExtension):
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
