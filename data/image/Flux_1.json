@@ -1,0 +1,11 @@
+{
+  "name": "Flux 1",
+  "base_resolution": 1024,
+  "multiple_of": 16,
+  "resolution_options": {
+    "values": [
+      "Area: 1024² (1.0MP)"
+    ],
+    "default": "Area: 1024² (1.0MP)"
+  }
+}

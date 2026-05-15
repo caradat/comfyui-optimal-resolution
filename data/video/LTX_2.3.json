@@ -1,0 +1,18 @@
+{
+  "name": "LTX 2.3",
+  "huggingface_url": "https://huggingface.co/Lightricks/LTX-2.3",
+  "base_resolution": 1024,
+  "multiple_of": 32,
+  "resolution_options": {
+    "values": [
+      "Area: 512² (0.26MP)",
+      "Area: 768² (0.59MP)",
+      "Area: 1024² (1.0MP)",
+      "Area: 1280² (1.64MP)",
+      "Area: 1536² (2.36MP)",
+      "Area: 1920² (3.69MP)",
+      "Area: 2048² (4.19MP)"
+    ],
+    "default": "Area: 1024² (1.0MP)"
+  }
+}

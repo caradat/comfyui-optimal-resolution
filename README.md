@@ -1,145 +1,142 @@
-# comfyui-optimal-resolution
+# ComfyUI Optimal Resolution
 
-Custom node for ComfyUI helps determine the optimal resolution for image generation based on the selected model, aspect ratio, and mode. It ensures that generated images use the optimal possible dimensions for each specific model, improving quality and consistency.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![ComfyUI](https://img.shields.io/badge/ComfyUI-custom%20node-blue)](https://github.com/comfyanonymous/ComfyUI)
 
-## Features
+<em>A custom node for <a href="https://github.com/comfyanonymous/ComfyUI">ComfyUI</a> that automatically computes the best width and height for any supported model, aspect ratio, and generation mode.</em>
 
-- **Model-specific resolutions**: Each model has its own optimal base resolution and multiple-of value
-- **Dynamic aspect ratio selection**: Aspect ratio options are filtered based on the selected mode, showing only valid combinations
-- **Multiple modes**: Some models support different generation modes (Standard, Fixed resolutions, etc.)
-- **Exact resolutions**: Certain models support fixed exact resolutions for optimal quality
-- **Automatic calculation**: Automatically calculates optimal width and height based on model requirements
+---
 
-## Supported Models
+## 🔍 Why This Node?
 
-### Image Models
-- **SDXL Base**: Base resolution 1024, multiple of 16
-- **SD 1.5**: Base resolution 512, multiple of 8
-- **Flux 1**: Base resolution 1024, multiple of 16
-- **Flux 2**: Base resolution 2048, multiple of 16
-- **Qwen Image**: Base resolution 1328, multiple of 16
-- **Ernie Image**: Base resolution 1024, multiple of 16
+Different AI models (SDXL, FLUX, Qwen, Wan, …) have different “native” resolutions and constraints. Using the wrong size can degrade quality or even cause errors. **ComfyUI‑Optimal Resolution** takes the guesswork out of the equation:
 
-### Video Models
-- **Wan 2.2 14B**: Base resolution 960, multiple of 16
-- **Wan 2.2 5B**: Base resolution 960, multiple of 16
-- **SVD XT**: Base resolution 1024, multiple of 16
+* **Model‑aware** – each model has its own base resolution and divisor.
+* **Mode‑aware** – supports *Area‑based*, *Fixed exact*, and *model‑specific modes* (e.g. 720p for Wan).
+* **Dynamic UI** – dropdowns automatically filter valid aspect ratios and modes based on the selected model.
+* **Instant feedback** – the calculated resolution is displayed directly on the node (for Nodes 1.0), so you always know what you’ll get.
 
-## Usage
+---
 
-1. Add the Optimal Resolution node to your ComfyUI workflow
-2. Select the model type (Image or Video)
-3. Choose the specific model from the dropdown
-4. Select the generation mode (if available)
-5. Select your desired aspect ratio (options are filtered based on the selected mode)
-6. The node will output the optimal width and height values
+## 🚀 Installation
 
-## Special Modes
+### 1. Clone the repository
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/caradat/comfyui-optimal-resolution.git
+```
 
-### SDXL Base
-- **Area-based (1024²)**: Uses base area of 1024² with aspect ratio adjustment
-- **Fixed (exact)**: Uses pre-defined optimal resolutions for SDXL:
-  - 1:1 - 1024×1024
-  - 16:9 - 1360×768
-  - 9:16 - 768×1360
-  - 4:3 - 1152×864
-  - 3:4 - 864×1152
-  - 3:2 - 1248×832
-  - 2:3 - 832×1248
+### 2. Restart ComfyUI
+After restarting, you’ll find the **“Optimal Resolution”** node under the `image` category.
 
-### Qwen Image
-- **Area-based (1328²)**: Uses base area of 1328² with aspect ratio adjustment
-- **Fixed (exact)**: Uses pre-defined, exact resolutions based on the [model guide](https://github.com/QwenLM/Qwen-Image)
-  - 1:1 - 1328×1328
-  - 16:9 - 1664×928
-  - 9:16 - 928×1664
-  - 4:3 - 1472×1104
-  - 3:4 - 1104×1472
-  - 3:2 - 1584×1056
-  - 2:3 - 1056×1584
+*That’s it – no additional Python packages are required.*
 
-### Ernie Image
-- **Area-based (1024²)**: Uses base area of 1024² with aspect ratio adjustment
-- **Fixed (exact)**: Uses pre-defined, exact resolutions based on the [model documentation](https://huggingface.co/baidu/ERNIE-Image)
-  - 1:1 - 1024×1024
-  - 16:9 - 1264×848
-  - 9:16 - 848×1264
-  - 21:9 - 1376×768
-  - 9:21 - 768×1376
-  - 9:7 - 1200×896
-  - 7:9 - 896×1200
+---
 
-### Flux 2
-- **Area: 512² (0.26MP)**: 0.26 megapixel, area = 262,144
-- **Area: 640² (0.41MP)**: 0.41 megapixels, area = 409,600
-- **Area: 768² (0.59MP)**: 0.59 megapixels, area = 589,824
-- **Area: 896² (0.80MP)**: 0.80 megapixels, area = 802,816
-- **Area: 1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
-- **Area: 1152² (1.33MP)**: 1.33 megapixels, area = 1,327,104
-- **Area: 1280² (1.64MP)**: 1.64 megapixels, area = 1,638,400
-- **Area: 1440² (2.07MP)**: 2.07 megapixels, area = 2,073,600
-- **Area: 1536² (2.36MP)**: 2.36 megapixels, area = 2,359,296
-- **Area: 1664² (2.77MP)**: 2.77 megapixels, area = 2,768,896
-- **Area: 1792² (3.21MP)**: 3.21 megapixels, area = 3,211,264
-- **Area: 1920² (3.69MP)**: 3.69 megapixels, area = 3,686,400
-- **Area: 2048² (4.19MP)**: 4.19 megapixels, area = 4,194,304
+## 🧪 Usage
 
-### Wan 2.2 14B
-- **720p (1280x704)**: 901120 area (1280×704)
-- **480p (854x480)**: 409920 area (854×480)
+![Example workflow](workflow.png)
 
-### Wan 2.2 5B
-- **720p (1280x704)**: 901120 area (1280×704)
-- **480p (854x480)**: 409920 area (854×480)
+1. Add the **Optimal Resolution** node to your workflow.
+2. Choose **Image** or **Video** model type.
+3. Pick your model (e.g., *Z-Image Turbo*).
+4. Select the desired **resolution mode** (e.g., *Area 1024² (1.0MP)*).
+5. Choose an **aspect ratio** – only valid options for the current mode are shown.
+6. The node outputs two integers: `width` and `height`, which you can feed directly into an **Empty Latent Image** or any other resolution‑dependent node.
 
-## Installation
+---
 
-1. Clone this repository into your ComfyUI custom_nodes directory:
-   ```bash
-   cd ComfyUI/custom_nodes
-   git clone https://github.com/caradat/comfyui-optimal-resolution.git
-   ```
-2. Restart ComfyUI
-3. The Optimal Resolution node will be available in the node list under the "image" category
+## ⚙️ Configuration
 
-## Configuration
+All model data is stored in `models_data.json` at the root of the extension. You can extend or modify it without touching the Python/JavaScript code.
 
-The node behavior is controlled by the `models_data.json` file, which contains:
+### Key sections of the JSON
 
-- `model_types`: Categorization of models into Image and Video types
-- `resolutions`: Custom area values for different modes (Area and model-specific like Wan 2.2 14B)
-- `exact_resolutions`: Pre-defined exact resolutions for specific aspect ratios
-- `aspect_ratios`: Aspect ratio options filtered by model and mode
-- `models_data`: Comprehensive model configuration including base_resolution, multiple_of, and resolution_options
+| Key                | Description                                                                       |
+|--------------------|-----------------------------------------------------------------------------------|
+| `model_types`      | Groups models into “Image” and “Video” types.                                     |
+| `resolutions`      | Named area‑based resolutions (e.g. `1024² (1.0MP)`).                              |
+| `exact_resolutions`| Fixed width×height pairs for models that use exact sizing.                        |
+| `aspect_ratios`    | Default list of aspect ratios; can be overridden per model/mode.                  |
+| `models_data`      | Per‑model settings: `base_resolution`, `multiple_of`, `resolution_options`, etc.  |
 
-## Area Mode
-The Area mode provides a unified set of resolution options for models that use area-based settings. This ensures consistency across different models.
+*(Example: adding a new model is as simple as adding a new entry to `models_data`.)*
 
-Available options:
-- **384² (0.15MP)**: 0.15 megapixel, area = 147,456
-- **448² (0.20MP)**: 0.20 megapixels, area = 200,704
-- **512² (0.26MP)**: 0.26 megapixel, area = 262,144
-- **640² (0.41MP)**: 0.41 megapixels, area = 409,600
-- **768² (0.59MP)**: 0.59 megapixels, area = 589,824
-- **896² (0.80MP)**: 0.80 megapixels, area = 802,816
-- **1024² (1.0MP)**: 1.0 megapixel, area = 1,048,576
-- **1152² (1.33MP)**: 1.33 megapixels, area = 1,327,104
-- **1280² (1.64MP)**: 1.64 megapixels, area = 1,638,400
-- **1440² (2.07MP)**: 2.07 megapixels, area = 2,073,600
-- **1536² (2.36MP)**: 2.36 megapixels, area = 2,359,296
-- **1664² (2.77MP)**: 2.77 megapixels, area = 2,768,896
-- **1792² (3.21MP)**: 3.21 megapixels, area = 3,211,264
-- **1920² (3.69MP)**: 3.69 megapixels, area = 3,686,400
-- **2048² (4.19MP)**: 4.19 megapixels, area = 4,194,304
-- **2240² (5.02MP)**: 5.02 megapixels, area = 5,017,600
-- **2560² (6.55MP)**: 6.55 megapixels, area = 6,553,600
-- **3072² (9.44MP)**: 9.44 megapixels, area = 9,437,184
-- **4096² (16.8MP)**: 16.8 megapixels, area = 16,777,216
+---
 
-## License
+## 📦 Supported Models
 
-MIT License
+| Type  | Model                 | Base Resolution | Divisor | Special Modes       |
+|-------|-----------------------|-----------------|---------|---------------------|
+| Image | Stable Diffusion 1.5  | 512             | 8       | Area: 0.26 MP       |
+| Image | SDXL Base             | 1024            | 16      | Fixed (exact), Area |
+| Image | Flux 1                | 1024            | 16      | Standard            |
+| Image | Flux 2                | 2048            | 16      | Area (0.26‑4.19 MP) |
+| Image | Qwen Image            | 1328            | 16      | Fixed (exact), Area |
+| Image | Z‑Image               | 1024            | 16      | Standard            |
+| Image | Ernie Image           | 1024            | 16      | Fixed (exact), Area |
+| Video | Wan 2.2 14B           | 960             | 16      | 720p, 480p          |
+| Video | Wan 2.2 5B            | 960             | 16      | 720p                |
+| Video | SVD XT                | 768             | 16      | Standard            |
+| Video | LTX 2.3               | 768             | 16      | Standard            |
 
-## Credits
+*(All modes and exact resolutions are defined in the central `models_data.json` file.)*
 
-This node was created to optimize image generation workflows in ComfyUI by ensuring proper resolution selection based on model requirements.
+---
+
+## 🧠 How It Works (Architecture Overview)
+
+The extension is split into two parts that communicate via ComfyUI’s internal API:
+
+1. **Python backend** (`nodes.py`, `__init__.py`)
+  * Loads `models_data.json`.
+  * Exposes two API endpoints:
+    * `GET /optimal_resolution/models` – serves the configuration to the frontend.
+    * `POST /optimal_resolution/calculate` – receives parameters (model, mode, ratio) and returns the computed resolution.
+  * Core logic (`calculate_resolution_logic`) handles exact resolutions, area‑based calculations, and divisor rounding.
+
+2. **JavaScript frontend** (`js/optimal_resolution.js`)
+  * Registers a ComfyUI extension that overrides `onNodeCreated`.
+  * Fetches the model configuration and populates the dropdown widgets dynamically.
+  * Listens to widget changes, debounces, and calls the `/calculate` API to update the display in real time.
+
+This separation ensures the UI stays responsive while the heavy lifting (or future extensions) remains on the Python side.
+
+---
+
+## 📐 Resolution Calculation Logic
+
+The node uses a multi‑step algorithm:
+
+1. **Parse the aspect ratio** (e.g., `"16:9"` → ratio = 16/9).
+2. **If “Fixed (exact)” mode** – look up the exact width/height for the chosen ratio in the model’s `exact_resolutions`.
+3. **If an “Area” mode** – extract the area value from `resolutions` (e.g. 1.0 MP = 1 048 576 pixels), then derive height = √(area / ratio) and width = height × ratio.
+4. **Round** both dimensions to the nearest multiple of the model’s divisor (usually 8 or 16).
+5. **Enforce a minimum** equal to the divisor to prevent zero or negative sizes.
+
+The display text is updated on the node automatically, so you never have to run a workflow just to see the numbers.
+
+---
+
+## 📁 Repository Structure
+
+```
+comfyui-optimal-resolution/
+├── __init__.py           # Extension registration & API routes
+├── nodes.py              # Main node class & resolution calculation
+├── models_data.json      # Central configuration file
+├── js/
+│   └── optimal_resolution.js  # Frontend widget logic
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+---
+
+Created by <a href="https://github.com/caradat">caradat</a>

@@ -17,11 +17,13 @@ app.registerExtension({
                     .then(res => res.json())
                     .then(data => {
                         this.modelsData = data;
+                        console.log("[OptimalResolution] Fetched models data:", data);
                         // Ensure all widgets are properly initialized with correct options
                         initializeWidgets(this, data);
                         // Force update of all dependent widgets
                         const modelWidget = this.widgets.find(w => w.name === "model");
                         if (modelWidget) {
+                            console.log("[OptimalResolution] Updating mode options for model:", modelWidget.value);
                             updateModeOptions(this, modelWidget.value, data);
                             updateAspectRatioOptions(this, modelWidget.value, "Fixed (exact)", data);
                         }
@@ -103,21 +105,34 @@ function updateModelList(node, modelType, data) {
 
 function updateModeOptions(node, modelName, data) {
     const modeWidget = node.widgets.find(w => w.name === "resolution");
-    if (!modeWidget || !data.models_data) return;
-
-    let options = data.models_data["default"];
-    if (data.models_data[modelName]) {
-        options = data.models_data[modelName];
+    if (!modeWidget || !data.models_data) {
+        console.error("[OptimalResolution] updateModeOptions: modeWidget or data.models_data is missing");
+        return;
     }
 
+    console.log("[OptimalResolution] updateModeOptions called for model:", modelName, "with data:", data.models_data[modelName]);
+    
+    let modelInfo = data.models_data[modelName];
+    if (!modelInfo) {
+        console.warn("[OptimalResolution] Model not found in data, using default:", modelName);
+        modelInfo = data.models_data["default"];
+    }
+    
+    if (!modelInfo) {
+        console.error("[OptimalResolution] Default model data is also missing");
+        return;
+    }
+    
+    const options = modelInfo.resolution_options;
+    if (!options || !options.values) {
+        console.error("[OptimalResolution] resolution_options or values is missing for model:", modelName, modelInfo);
+        return;
+    }
+    
     const currentMode = modeWidget.value;
-    modeWidget.options.values = options.resolution_options.values;
-    // Сохраняем текущее значение, если оно валидно для новой модели, иначе используем значение по умолчанию
-    if (options.resolution_options.values.includes(currentMode)) {
-        modeWidget.value = currentMode;
-    } else {
-        modeWidget.value = options.resolution_options.default;
-    }
+    modeWidget.options.values = options.values;
+    // Всегда устанавливаем значение на default из конфигурации новой модели
+    modeWidget.value = options.default;
 }
 
 function updateAspectRatioOptions(node, modelName, resolution, data) {

@@ -2,25 +2,105 @@ import json
 import os
 import math
 
+from comfy_api.latest import ComfyExtension, io, ui
+
 # Determine the path to the extension directory
 NODE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(NODE_DIR, "models_data.json")
+DATA_DIR = os.path.join(NODE_DIR, "data")
 
-def load_models_data():
+# Cache for loaded data
+_models_data_cache = None
+_aspect_ratios_data = None
+_resolutions_data = None
+
+
+def _load_json_file(filepath):
+    """Safely load a JSON file and return its content."""
     try:
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
-        print(f"[OptimalResolution] Error loading models_data.json: {e}")
+        print(f"[OptimalResolution] Error loading {filepath}: {e}")
         return {}
 
-class OptimalResolutionNode:
+def _load_model_file(model_name, model_type):
+    """Load a single model's configuration file."""
+    # Convert model name to filename (replace spaces with underscores)
+    filename = model_name.replace(' ', '_') + '.json'
+    # Determine the subdirectory based on model type
+    subdir = 'image' if model_type == 'Image' else 'video'
+    filepath = os.path.join(DATA_DIR, subdir, filename)
+    model_data = _load_json_file(filepath)
+    print(f"[OptimalResolution] Loaded model '{model_name}' from {filepath}: {model_data}")
+    return model_data
+
+def load_models_data():
+    """
+    Load the complete models data structure from the modular files in the `data/` directory.
+    This function aggregates data from:
+    - `data/model_types.json` (or the model_types list in the old file)
+    - `data/resolutions.json`
+    - `data/aspect_ratios.json`
+    - Individual model files in `data/image/` and `data/video/`
+    
+    Returns a dictionary with the same structure as the old `models_data.json`.
+    """
+    global _models_data_cache, _aspect_ratios_data, _resolutions_data
+    
+    # Return cached data if available
+    if _models_data_cache is not None:
+        return _models_data_cache
+    
+    # Initialize the data structure
+    data = {
+        "model_types": {"Image": [], "Video": []},
+        "models_data": {},
+        "resolutions": {},
+        "aspect_ratios": {}
+    }
+    
+    # Load the main configuration files
+    _resolutions_data = _load_json_file(os.path.join(DATA_DIR, "resolutions.json"))
+    _aspect_ratios_data = _load_json_file(os.path.join(DATA_DIR, "aspect_ratios.json"))
+    
+    data["resolutions"] = _resolutions_data
+    data["aspect_ratios"] = _aspect_ratios_data
+    
+    # Dynamically discover models by scanning the image and video directories
+    for model_type, subdir in {"Image": "image", "Video": "video"}.items():
+        dir_path = os.path.join(DATA_DIR, subdir)
+        if not os.path.exists(dir_path):
+            print(f"[OptimalResolution] Directory not found: {dir_path}")
+            continue
+        
+        # List all .json files in the directory
+        for filename in os.listdir(dir_path):
+            if filename.endswith('.json'):
+                # Extract model name from filename (remove .json and replace underscores with spaces)
+                model_name = filename[:-5].replace('_', ' ')
+                
+                # Add the model name to the model_types list
+                data["model_types"][model_type].append(model_name)
+                
+                # Load the model's data
+                model_data = _load_model_file(model_name, model_type)
+                if model_data is None:
+                    print(f"[OptimalResolution] Failed to load data for model: {model_name}")
+                    continue
+                # Use the model_name (from filename) as the key for consistency with the frontend
+                data["models_data"][model_name] = model_data
+    
+    # Cache the result
+    _models_data_cache = data
+    return data
+
+class OptimalResolutionNode(io.ComfyNode):
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         return float("NaN")
 
     @classmethod
-    def INPUT_TYPES(s):
+    def define_schema(cls) -> io.Schema:
         # Load data to get all possible values for validation
         data = load_models_data()
         
@@ -34,6 +114,8 @@ class OptimalResolutionNode:
         all_modes = ["Standard"]  # Default placeholder
         models_data = data.get("models_data", {})
         for model_name, model_info in models_data.items():
+            if model_info is None:
+                continue
             mode_info = model_info.get("resolution_options", {})
             if isinstance(mode_info, dict) and "values" in mode_info:
                 all_modes.extend(mode_info["values"])
@@ -50,21 +132,21 @@ class OptimalResolutionNode:
         # Since we can't access model value here at class level, we return the default
         # The actual dynamic selection will be handled in the widget frontend
         
-        return {
-            "required": {
-                "model_type": (["Image", "Video"],),
-                "model": (all_models,),
-                "resolution": (all_modes,),
-                "aspect_ratio": (aspect_ratios,),
-            }
-        }
-
-    RETURN_TYPES = ("INT", "INT")
-    RETURN_NAMES = ("width", "height")
-    FUNCTION = "get_resolution"
-    CATEGORY = "image"
-    
-    models_data = None
+        return io.Schema(
+            node_id="OptimalResolutionNode",
+            display_name="Optimal Resolution",
+            category="image",
+            inputs=[
+                io.Combo.Input("model_type", options=["Image", "Video"], display_name="Model Type"),
+                io.Combo.Input("model", options=all_models, display_name="Model"),
+                io.Combo.Input("resolution", options=all_modes, display_name="Resolution"),
+                io.Combo.Input("aspect_ratio", options=aspect_ratios, display_name="Aspect Ratio"),
+            ],
+            outputs=[
+                io.Int.Output(display_name="width"),
+                io.Int.Output(display_name="height"),
+            ],
+        )
 
     @staticmethod
     def calculate_resolution_logic(model_type, model, aspect_ratio, mode, data):
@@ -85,8 +167,14 @@ class OptimalResolutionNode:
             ar_w, ar_h = int(ar_parts[0]), int(ar_parts[1])
             ratio = ar_w / ar_h
 
-            # Get model-specific data, falling back to defaults
-            model_data = data.get("models_data", {}).get(model, data.get("models_data", {}).get("default", {}))
+            # Get model-specific data
+            model_data = data.get("models_data", {}).get(model, {})
+            if not model_data:
+                print(f"[OptimalResolution] Model '{model}' not found, using default.")
+                model_data = data.get("models_data", {}).get("default", {})
+                if not model_data:
+                    print("[OptimalResolution] Default model data is missing.")
+                    model_data = {"base_resolution": 1024, "multiple_of": 16}
             
             # Get multiple_of value for the model, default to 16
             multiple_of = model_data.get("multiple_of", 16)
@@ -147,23 +235,26 @@ class OptimalResolutionNode:
 
         return width, height, display_text
 
-    def get_resolution(self, model_type, model, aspect_ratio, resolution):
-        data = self.__class__.models_data
-        if not data:
-            data = load_models_data()
-            self.__class__.models_data = data
+    @classmethod
+    def execute(cls, model_type, model, aspect_ratio, resolution) -> io.NodeOutput:
+        # Ensure models_data is loaded
+        if not cls.models_data:
+            cls.models_data = load_models_data()
 
         # Validate resolution for model
-        model_data = data.get("models_data", {}).get(model, data.get("models_data", {}).get("default", {}))
+        model_data = cls.models_data.get("models_data", {}).get(model, cls.models_data.get("models_data", {}).get("default", {}))
+        if model_data is None:
+            print(f"[OptimalResolution] Model data is None for model: {model}")
+            model_data = {}
         valid_modes = model_data.get("resolution_options", {}).get("values", [])
         if valid_modes and resolution not in valid_modes:
             resolution = "Standard"  # fallback
 
-        w, h, text = self.calculate_resolution_logic(
-            model_type, model, aspect_ratio, resolution, data
+        w, h, text = cls.calculate_resolution_logic(
+            model_type, model, aspect_ratio, resolution, cls.models_data
         )
 
-        return {
-            "ui": {"resolution_text": [text]}, 
-            "result": (w, h)
-        }
+        return io.NodeOutput(
+            w, h,
+            ui={"resolution_text": [text]}
+        )

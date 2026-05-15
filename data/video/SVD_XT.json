@@ -1,0 +1,14 @@
+{
+  "name": "SVD XT",
+  "base_resolution": 768,
+  "multiple_of": 16,
+  "resolution_options": {
+    "values": [
+      "Fixed (exact)"
+    ],
+    "default": "Fixed (exact)"
+  },
+  "exact_resolutions": {
+    "16:9": [1024, 576]
+  }
+}

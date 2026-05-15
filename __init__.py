@@ -1,26 +1,27 @@
 from .nodes import OptimalResolutionNode, load_models_data, NODE_DIR
+from .nodes import ComfyExtension, io
 from server import PromptServer
 import json
 import os
 import aiohttp
 
-NODE_CLASS_MAPPINGS = {
-    "OptimalResolutionNode": OptimalResolutionNode
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "OptimalResolutionNode": "Optimal Resolution"
-}
 
 WEB_DIRECTORY = "./js"
 
 # Load data immediately at module import time
 OptimalResolutionNode.models_data = load_models_data()
 
-# Setup API Routes
-server = PromptServer.instance
+class OptimalResolutionExtension(ComfyExtension):
+    async def get_node_list(self) -> list[type[io.ComfyNode]]:
+        return [OptimalResolutionNode]
 
-@server.routes.get("/optimal_resolution/models")
+async def comfy_entrypoint() -> ComfyExtension:
+    return OptimalResolutionExtension()
+
+# Setup API Routes
+prompt_server = PromptServer.instance
+
+@prompt_server.routes.get("/optimal_resolution/models")
 async def get_models_data(request):
     """Returns the configuration JSON to the frontend."""
     data = OptimalResolutionNode.models_data
@@ -28,15 +29,14 @@ async def get_models_data(request):
         data = load_models_data()
     return aiohttp.web.json_response(data, status=200)
 
-@server.routes.post("/optimal_resolution/calculate")
+@prompt_server.routes.post("/optimal_resolution/calculate")
 async def calculate_resolution_api(request):
     """Calculates resolution without executing the workflow."""
     try:
         body = await request.json()
         model_type = body.get("model_type", "Image")
-        model = body.get("model", "SDXL Base")
+        model = body.get("model", "Flux 1")
         aspect_ratio = body.get("aspect_ratio", "1:1")
-        multiple_of = body.get("multiple_of", 16)
         resolution = body.get("resolution", "Standard")
         
         data = OptimalResolutionNode.models_data
@@ -56,4 +56,4 @@ async def calculate_resolution_api(request):
         print(f"[OptimalResolution] API Error: {e}")
         return aiohttp.web.json_response({"error": str(e)}, status=500)
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']
+__all__ = ['WEB_DIRECTORY']

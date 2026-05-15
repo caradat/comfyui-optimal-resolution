@@ -1,0 +1,16 @@
+{
+  "name": "Wan 2.2 5B",
+  "huggingface_url": "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B",
+  "base_resolution": 960,
+  "multiple_of": 16,
+  "resolution_options": {
+    "values": [
+      "Fixed (exact)",
+      "Area: 960² (0.92MP)"
+    ],
+    "default": "Fixed (exact)"
+  },
+  "exact_resolutions": {
+    "16:9 (720p)": [1280, 704]
+  }
+}

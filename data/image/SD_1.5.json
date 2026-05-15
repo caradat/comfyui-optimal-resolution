@@ -1,0 +1,11 @@
+{
+  "name": "SD 1.5",
+  "base_resolution": 512,
+  "multiple_of": 8,
+  "resolution_options": {
+    "values": [
+      "Area: 512² (0.26MP)"
+    ],
+    "default": "Area: 512² (0.26MP)"
+  }
+}

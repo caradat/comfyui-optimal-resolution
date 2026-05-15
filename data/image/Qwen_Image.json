@@ -1,0 +1,21 @@
+{
+  "name": "Qwen Image",
+  "base_resolution": 1328,
+  "multiple_of": 16,
+  "resolution_options": {
+    "values": [
+      "Fixed (exact)",
+      "Area: 1328² (1.76MP)"
+    ],
+    "default": "Fixed (exact)"
+  },
+  "exact_resolutions": {
+    "1:1": [1328, 1328],
+    "16:9": [1664, 928],
+    "9:16": [928, 1664],
+    "4:3": [1472, 1104],
+    "3:4": [1104, 1472],
+    "3:2": [1584, 1056],
+    "2:3": [1056, 1584]
+  }
+}

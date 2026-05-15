@@ -1,0 +1,21 @@
+{
+  "name": "SDXL Base",
+  "base_resolution": 1024,
+  "multiple_of": 16,
+  "resolution_options": {
+    "values": [
+      "Fixed (exact)",
+      "Area: 1024² (1.0MP)"
+    ],
+    "default": "Fixed (exact)"
+  },
+  "exact_resolutions": {
+    "1:1": [1024, 1024],
+    "16:9": [1360, 768],
+    "9:16": [768, 1360],
+    "4:3": [1152, 864],
+    "3:4": [864, 1152],
+    "3:2": [1248, 832],
+    "2:3": [832, 1248]
+  }
+}
